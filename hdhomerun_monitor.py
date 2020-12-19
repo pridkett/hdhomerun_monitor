@@ -3,6 +3,7 @@
 import argparse
 import csv
 import re
+import os
 from typing import List
 from subprocess import Popen, PIPE
 import time
@@ -18,10 +19,14 @@ status_regex = re.compile("^ch=(?P<freqtable>[a-z-]+):(?P<freq>[0-9]+) lock=(?P<
 def scan_channels(hdhr: str, freqs: List[int], outfile: str):
     freq_ctr = 0
 
-    with open(outfile, 'w', newline='') as csvfile:
+    mode = 'w'
+    if os.path.exists(outfile):
+        mode = 'a+'
+    with open(outfile, mode, newline='') as csvfile:
         fieldnames = ['time', 'freq', 'lock', 'ss', 'snq', 'seq', 'bps', 'pps']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames, extrasaction='ignore')
-        writer.writeheader()
+        if mode is not 'a+':
+            writer.writeheader()
 
         while True:
             scan_freqs = (freqs+freqs)[freq_ctr:freq_ctr + NUM_TUNERS]
